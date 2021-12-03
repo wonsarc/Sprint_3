@@ -1,11 +1,14 @@
 package ru.praktikum_services.qa_scooter;
 
+import io.restassured.response.ValidatableResponse;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 
 public class OrderTest {
 
@@ -18,12 +21,13 @@ public class OrderTest {
 
     @Test
     public void getInfoOrderTest() {
-        Order order = new Order(
-                "Naruto", "Uchiha", "Konoha, 142 apt.",
-                4, "+7 800 355 35 35", 5, "2020-06-06",
-                "Saske, come back to Konoha", new String[]{"GREY"});
+        int orderId = orderClient.getOrderId(orderClient.create(Order.getOrderWithSetColor(new String[]{})));
+        ValidatableResponse response = orderClient.getOrderInfo(orderId);
 
-        HashMap<String, String> orderInfo = orderClient.getOrder(orderClient.create(order));
+        int statusCode = response.extract().statusCode();
+        HashMap<String, String> orderInfo = response.extract().path("order");
+
+        assertThat("Status code is incorrect", statusCode, equalTo(200));
         assertFalse("Order is not found", orderInfo.isEmpty());
     }
 }
